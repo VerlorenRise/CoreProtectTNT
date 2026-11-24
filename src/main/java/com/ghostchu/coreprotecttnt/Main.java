@@ -44,14 +44,15 @@ public class Main extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        Bukkit.getPluginManager().registerEvents(this, this);
-        saveDefaultConfig();
         Plugin depend = Bukkit.getPluginManager().getPlugin("CoreProtect");
-        if (depend == null) {
-            getPluginLoader().disablePlugin(this);
+        if (!(depend instanceof CoreProtect coreProtect) || !depend.isEnabled()) {
+            getLogger().severe("CoreProtect must be enabled before CoreProtectTNT can start.");
+            Bukkit.getPluginManager().disablePlugin(this);
             return;
         }
-        api = ((CoreProtect) depend).getAPI();
+        api = coreProtect.getAPI();
+        saveDefaultConfig();
+        Bukkit.getPluginManager().registerEvents(this, this);
     }
 
     // Bed/RespawnAnchor explosion (tracing)
@@ -387,7 +388,7 @@ public class Main extends JavaPlugin implements Listener {
 
     @EventHandler(ignoreCancelled = true, priority = EventPriority.LOWEST)
     public void onBombHit(ProjectileHitEvent e) {
-        if (e.getHitEntity() instanceof ExplosiveMinecart || e.getEntityType() == EntityType.ENDER_CRYSTAL) {
+        if (e.getHitEntity() instanceof ExplosiveMinecart || e.getHitEntity() instanceof EnderCrystal) {
             if (e.getEntity().getShooter() != null && e.getEntity().getShooter() instanceof Player) {
                 if (e.getHitEntity() != null) {
                     String sourceFromCache = probablyCache.getIfPresent(e.getEntity());
